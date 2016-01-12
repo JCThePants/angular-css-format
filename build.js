@@ -1,6 +1,6 @@
 var _fs = require('fs');
 
-var output = '../../web/js/libs/css-format.js'
+var output = '../CSSFormatter/src/web/js/libs/css-format.js';
 
 var basePath = 'src/';
 var files = [
@@ -17,7 +17,7 @@ var files = [
         'CSSSelectors.js',
         'CSSTableOfContents.js',
         'CSSUtils.js',
-        'directive-css-output.js',
+        'directive-css-output.js'
     ];
 
 

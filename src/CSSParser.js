@@ -8,12 +8,16 @@ module.factory('CSSParser', ['CSSComment', 'CSSParentSelector', 'CSSProperty', '
     function CSSParserState(css) {
         this.css = css;
         this.i = 0;
+        // selectors that can have child selectors (embedded)
+        this.parentSelectors = [
+            '@media'
+        ];
     }
 
     /**
      * Parses stylesheet string into an object model.
      * 
-     * @param {string} css   The stylesheet to parse.
+     * @param {string|CSSParserState} css   The stylesheet to parse.
      */
     function CSSParser(css) {
 
@@ -67,34 +71,34 @@ module.factory('CSSParser', ['CSSComment', 'CSSParentSelector', 'CSSProperty', '
                 }
 
             }
-            // check for parent selector
-            else if (ch === '@') {
-
-                var result = this.parseTill('{', state);
-                state.i++;
-
-                var parent = new CSSParentSelector(result.trim());
-                var parser = new CSSParser(state);
-                for (var j = 0, item; item = parser.getSelectors()[j]; j++) {
-                    parent.children.push(item);
-                }
-                selectors.push(parent);
-
-            }
             // parse selectors
             else if (mode === 'none') {
 
-                if (ch === '}')
-                    break;
+                // check for embeddable selectors
+                if (this.matchAhead(state.parentSelectors, state)) {
+                    var result = this.parseTill('{', state);
+                    state.i++;
 
-                currSelectors = this.parseSelectors(state);
-                if (!currSelectors) {
-                    pushSelectors();
-                    continue;
+                    var parent = new CSSParentSelector(result.trim());
+                    var parser = new CSSParser(state);
+                    for (var j = 0, item; item = parser.getSelectors()[j]; j++) {
+                        parent.children.push(item);
+                    }
+                    selectors.push(parent);
                 }
+                else {
 
-                mode = 'parse-property';
+                    if (ch === '}')
+                        break;
 
+                    currSelectors = this.parseSelectors(state);
+                    if (!currSelectors) {
+                        pushSelectors();
+                        continue;
+                    }
+
+                    mode = 'parse-property';
+                }
             }
             // parse property name
             else if (mode === 'parse-property') {
@@ -139,8 +143,8 @@ module.factory('CSSParser', ['CSSComment', 'CSSParentSelector', 'CSSProperty', '
      * 
      * @param   {CSSParserState}  state  The parser state.
      *                              
-     * @returns {true|false}  true if return/new-line characters were found during 
-     *                        skip, otherwise false.
+     * @returns {boolean}  true if return/new-line characters were found during
+     *                     skip, otherwise false.
      */
     CSSParser.prototype.skipWhiteSpace = function (state) {
         var hasReturn = false;
@@ -162,7 +166,7 @@ module.factory('CSSParser', ['CSSComment', 'CSSParentSelector', 'CSSProperty', '
      * Continue parsing until a specific character is found.
      * 
      * @param   {string}    term   The character to stop at.
-     * @param   {CSSState}  state  The parser state.
+     * @param   {CSSParserState}  state  The parser state.
      *                             
      * @returns {string}  The characters that were parsed.
      */
@@ -175,6 +179,37 @@ module.factory('CSSParser', ['CSSComment', 'CSSParentSelector', 'CSSProperty', '
             result += ch;
         }
         return result;
+    };
+
+
+    /**
+     * check if the next characters in the CSS match any strings in a terms array.
+     *
+     * @param {Array}     terms  An array of strings to match against.
+     * @param {CSSParserState}  state  The parser state.
+     *
+     * @returns {string|null}  The matching string or null if no matches.
+     */
+    CSSParser.prototype.matchAhead = function(terms, state) {
+        for (var i= 0, isMatch = true, match; match = state.parentSelectors[i]; i++) {
+
+            for (var j= state.i, ch; ch = state.css[j]; j++) {
+
+                var letterIndex = j - state.i;
+                if (letterIndex === match.length)
+                    break;
+
+                if (ch !== match[letterIndex]) {
+                    isMatch = false;
+                    break;
+                }
+            }
+
+            if (isMatch) {
+                return match;
+            }
+        }
+        return null;
     };
 
     /**
