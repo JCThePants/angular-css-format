@@ -17,7 +17,7 @@ var files = [
         'CSSSelectors.js',
         'CSSTableOfContents.js',
         'CSSUtils.js',
-        'directive-css-output.js'
+        'directive.css-output.js'
     ];
 
 
