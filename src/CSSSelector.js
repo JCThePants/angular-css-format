@@ -2,7 +2,7 @@ module.factory('CSSSelector', [function () {
 
     /**
      * Single selector data object.
-     * 
+     *
      * @param {string} name  The selector name.
      */
     function CSSSelector(name) {
@@ -11,8 +11,8 @@ module.factory('CSSSelector', [function () {
 
     /**
      * Determine if the selector has a combinator.
-     * 
-     * @returns {true|false}
+     *
+     * @returns {boolean}
      */
     CSSSelector.prototype.hasCombinator = function () {
         return this.name.indexOf(' ') !== -1 ||

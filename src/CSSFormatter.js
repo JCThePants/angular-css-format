@@ -1,5 +1,5 @@
- module.factory('CSSFormatter', ['CSSLine', 'CSSComment', 'CSSParentSelector', 'CSSProperty', 'CSSSelectors', 'CSSUtils', 
-                                    function (CSSLine, CSSComment, CSSParentSelector, CSSProperty, CSSSelectors, CSSUtils) {
+ module.factory('CSSFormatter', ['CSSLine', 'CSSComment', 'CSSParentSelector', 'CSSProperty', 'CSSSelectors', 'CSSUtils', 'cssNestedIndenter',
+                                         function (CSSLine, CSSComment, CSSParentSelector, CSSProperty, CSSSelectors, CSSUtils, nestedIndenter) {
 
         /**
          * Generates formatted CSS in objects each representing a single
@@ -32,7 +32,8 @@
                     forcePerLine: false,        // if true, always writes multi selectors each on a new line
                     combinatedPerLine: true,    // if true, combined selectors in multi selectors are each on their own line
                     linesBeforeMulti: 0,        // extra lines to before multi selectors, if less than linesBefore, linesBefore is used.
-                    multispace: 1               // spaces between individual selectors in multi selectors,
+                    multispace: 1,              // spaces between individual selectors in multi selectors,
+                    nestedIndent: 0             // nested indent based on selector specificity
                 },
                 braces: {
                     openNewLine: false,         // If true, the opening brace is placed on a new line,
@@ -40,13 +41,13 @@
                     openIndentAfter: 0,         // The number of spaces after an opening brace.
                     closeNewLine: true,         // If true, the closing brace is placed on a new line
                     closeIndent: 0,             // The number of spaces before a closing brace.
-                    closeIndentAfter: 0,        // The number of spaces after a clsoing brace.
+                    closeIndentAfter: 0         // The number of spaces after a clsoing brace.
                 },
                 property: {
                     newLine: true,              // True to place properties each on its own line
                     spaceBetween: 1,            // the number of spaces between the property and its value;
                     closeLast: true,            // if true, adds a semicolon at the end of the last property
-                    indentAfter: 0,             // the number of spaces after a property
+                    indentAfter: 0              // the number of spaces after a property
                 },
                 comments: {
                     render: true,               // true to render comments
@@ -81,24 +82,31 @@
          * Generate formatted stylesheet as line objects and optionally output
          * directly into a specified array.
          * 
-         * @param   {Array} [outputArray] Array to output line objects into.
-         * 
          * @returns {Array} An array of generated line objects.
          */
         CSSFormatter.prototype.generateLines = function () {
             var parser = this._parser,
                 entities = parser.getSelectors(),
-                state = new CSSFormatState();
+                state = new CSSFormatState(),
+                options = this._options;
 
-            for (var i = 0, prev, entity; entity = entities[i]; i++) {
+            var indent = 0;
+
+            // apply nested indent
+            if (options.selectors.nestedIndent) {
+                nestedIndenter.indent(entities, options.selectors.nestedIndent);
+            }
+
+            for (var i = 0, prev, prevSelector, entity; entity = entities[i]; i++) {
 
                 if (entity instanceof CSSComment) {
-                    this.generateComment(entity, 0, state);
+                    this.generateComment(entity, indent, state);
                 } else if (entity instanceof CSSParentSelector) {
-                    this.generateParentSelectors(entity, prev && prev instanceof CSSComment, 0, state);
+                    this.generateParentSelectors(entity, prev && prev instanceof CSSComment, indent, state);
                 } else if (entity instanceof CSSSelectors) {
-                    this.generateSelectors(entity, prev && prev instanceof CSSComment, 0, state);
-                    this.generateProperties(entity, 0, state);
+                    this.generateSelectors(entity, prev && prev instanceof CSSComment, entity.indent, state);
+                    this.generateProperties(entity, entity.indent, state);
+                    prevSelector = entity;
                 }
 
                 prev = entity;
@@ -180,7 +188,7 @@
          * Format and output selectors and opening brace.
          * 
          * @param   {CSSSelectors}    selectors       The selectors object to format.
-         * @param   {true|false}      isAfterComment  True if the comment proceeds a comment, otherwise false.
+         * @param   {boolean}         isAfterComment  True if the comment proceeds a comment, otherwise false.
          * @param   {number}          indent          The number of indents to add before the selector.
          * @param   {CSSFormatState}  state           The formatter state.
          */
@@ -203,6 +211,7 @@
             for (var i = 0, last = selectors.selectors.length - 1, sel; sel = selectors.selectors[i]; i++) {
 
                 var text = [sel];
+                sel.indent = indent;
                 comma(i, text);
 
                 var newLine = (function () {
@@ -262,7 +271,6 @@
 
                         state.current.push([CSSUtils.spaceChar, prop]);
                     }
-                    continue;
                 } else if (prop instanceof CSSProperty) {
 
                     popts.newLine && state.newLine(indent + options.indent);

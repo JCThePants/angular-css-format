@@ -4,21 +4,22 @@ var output = '../CSSFormatter/src/web/js/libs/css-format.js';
 
 var basePath = 'src/';
 var files = [
-        'module.js',
-        'CSSComment.js',
-        'CSSFormatter.js',
-        'CSSLine.js',
-        'CSSParentSelector.js',
-        'CSSParser.js',
-        'CSSProperty.js',
-        'CSSPropertyName.js',
-        'CSSPropertyValue.js',
-        'CSSSelector.js',
-        'CSSSelectors.js',
-        'CSSTableOfContents.js',
-        'CSSUtils.js',
-        'directive.css-output.js'
-    ];
+    'module.js',
+    'CSSComment.js',
+    'CSSFormatter.js',
+    'CSSLine.js',
+    'CSSParentSelector.js',
+    'CSSParser.js',
+    'CSSProperty.js',
+    'CSSPropertyName.js',
+    'CSSPropertyValue.js',
+    'CSSSelector.js',
+    'CSSSelectors.js',
+    'CSSTableOfContents.js',
+    'CSSUtils.js',
+    'directive.css-output.js',
+    'service.css-nested-indenter.js'
+];
 
 
 console.log('Reading source files');
