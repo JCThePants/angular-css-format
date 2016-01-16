@@ -12,6 +12,7 @@ module.factory('CSSSelectors', ['CSSUtils', function (CSSUtils) {
         this.start = 0;
         this.end = 0;
         this.indent = 0;
+        this.comments = [];
     }
 
     /**

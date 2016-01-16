@@ -1,17 +1,21 @@
-module.directive('cssLines', ['CSSComment', 'CSSParentSelector', 'CSSSelector', 'CSSPropertyName', 'CSSPropertyValue', 'CSSUtils', function (CSSComment, CSSParentSelector, CSSSelector, CSSPropertyName, CSSPropertyValue, CSSUtils) {
+(function () {
 
-    var ae = angular.element;
+    module.directive('cssLines', CSSLinesDirective);
+    CSSLinesDirective.$inject = ['CSSComment', 'CSSParentSelector', 'CSSSelector', 'CSSPropertyName', 'CSSPropertyValue', 'CSSUtils'];
 
-    function nbsp(str) {
-        return str.toString().replace(/ /g, '&nbsp;');
-    }
+    function CSSLinesDirective(CSSComment, CSSParentSelector, CSSSelector, CSSPropertyName, CSSPropertyValue, CSSUtils) {
 
-    return {
-        restrict: 'A',
-        scope: {
-            lines: '=cssLines'
-        },
-        link: function (scope, elem, attrs) {
+        var ae = angular.element;
+
+        return {
+            restrict: 'A',
+            scope: {
+                lines: '=cssLines'
+            },
+            link: cssLinesLink
+        };
+
+        function cssLinesLink(scope, elem) {
 
             scope.$watch('lines', function () {
 
@@ -21,7 +25,7 @@ module.directive('cssLines', ['CSSComment', 'CSSParentSelector', 'CSSSelector', 
                     return;
 
                 for (var i = 0, line; line = scope.lines[i]; i++) {
-                    var div = ae('<div class="css-line"></div>')
+                    var div = ae('<div class="css-line"></div>');
                     elem.append(div);
 
                     if (line.text().length === 0) {
@@ -34,21 +38,7 @@ module.directive('cssLines', ['CSSComment', 'CSSParentSelector', 'CSSSelector', 
 
                     for (var j = 0, item; item = line.text()[j]; j++) {
 
-                        var className;
-                        if (item instanceof CSSComment) {
-                            className = 'css-comment ' + item.type;
-                        } else if (item instanceof CSSParentSelector) {
-                            className = 'css-selector';
-                        } else if (item instanceof CSSSelector) {
-                            className = 'css-selector';
-                        } else if (item instanceof CSSPropertyName) {
-                            className = 'css-property-name';
-                        } else if (item instanceof CSSPropertyValue) {
-                            className = 'css-property-value';
-                        } else {
-                            className = 'css-text';
-                        }
-
+                        var className = getCssClass(item);
                         if (className)
                             div.append('<span class="' + className + '">' + item + '</span>');
                         else {
@@ -57,7 +47,26 @@ module.directive('cssLines', ['CSSComment', 'CSSParentSelector', 'CSSSelector', 
                     }
                 }
             });
-
         }
-    };
-}]);
+
+        function getCssClass(item) {
+            if (item instanceof CSSComment) {
+                return 'css-comment ' + item.type;
+            } else if (item instanceof CSSParentSelector) {
+                return 'css-selector';
+            } else if (item instanceof CSSSelector) {
+                return 'css-selector';
+            } else if (item instanceof CSSPropertyName) {
+                return 'css-property-name';
+            } else if (item instanceof CSSPropertyValue) {
+                return 'css-property-value';
+            } else {
+                return 'css-text';
+            }
+        }
+
+        function nbsp(str) {
+            return str.toString().replace(/ /g, '&nbsp;');
+        }
+    }
+}());

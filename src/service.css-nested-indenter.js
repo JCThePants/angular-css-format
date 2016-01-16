@@ -32,8 +32,6 @@ module.service('cssNestedIndenter', ['CSSSelectors', function (CSSSelectors) {
             indentMap[key] = indent;
             entity.indent = (indent - 1) * (indentSpaces || 4);
         }
-
-        console.log(indentMap);
     };
 
     /**

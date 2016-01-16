@@ -26,14 +26,23 @@ module.factory('CSSParser', ['CSSComment', 'CSSParentSelector', 'CSSProperty', '
             mode = 'none', // parse-selector, parse-property, parse-value
             currSelectors = null,
             currProperty = null,
-            prevProperty = null;
+            prevProperty = null,
+            selectorComments = [];
+
 
         if (!state.css)
             return;
 
         // push current selectors into array and reset
         function pushSelectors() {
-            currSelectors && selectors.push(currSelectors);
+            if (currSelectors) {
+                selectors.push(currSelectors);
+
+                if (selectorComments.length) {
+                    currSelectors.comments = selectorComments;
+                    selectorComments = [];
+                }
+            }
             currSelectors = null;
             mode = 'none';
         }
@@ -59,7 +68,7 @@ module.factory('CSSParser', ['CSSComment', 'CSSParentSelector', 'CSSProperty', '
 
                 // selector comment
                 if (mode == 'none') {
-                    selectors.push(this.parseComment(state, 'selector'));
+                    selectorComments.push(this.parseComment(state, 'selector'));
                 }
                 // property comment
                 else if (hasReturn && currSelectors) {

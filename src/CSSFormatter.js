@@ -1,10 +1,10 @@
- module.factory('CSSFormatter', ['CSSLine', 'CSSComment', 'CSSParentSelector', 'CSSProperty', 'CSSSelectors', 'CSSUtils', 'cssNestedIndenter',
-                                         function (CSSLine, CSSComment, CSSParentSelector, CSSProperty, CSSSelectors, CSSUtils, nestedIndenter) {
+module.factory('CSSFormatter', ['CSSLine', 'CSSComment', 'CSSParentSelector', 'CSSProperty', 'CSSSelectors', 'CSSUtils', 'cssNestedIndenter',
+    function (CSSLine, CSSComment, CSSParentSelector, CSSProperty, CSSSelectors, CSSUtils, nestedIndenter) {
 
         /**
          * Generates formatted CSS in objects each representing a single
          * line in the output stylesheet.
-         * 
+         *
          * @param {CSSParser} parser        The CSS Parser to use.
          * @param {object}    [options={}]  Optional configuration. See defaultOptions function source for documentation.
          */
@@ -18,7 +18,7 @@
 
         /**
          * Get a new object filled with default options.
-         * 
+         *
          * @returns {object}
          */
         CSSFormatter.defaultOptions = function () {
@@ -62,7 +62,7 @@
 
         /**
          * Get a new object filled with default options.
-         * 
+         *
          * @returns {object}
          */
         CSSFormatter.prototype.defaultOptions = function () {
@@ -71,7 +71,7 @@
 
         /**
          * Get generated lines.
-         * 
+         *
          * @returns {Array} Array of CSSLine
          */
         CSSFormatter.prototype.getLines = function () {
@@ -81,7 +81,7 @@
         /**
          * Generate formatted stylesheet as line objects and optionally output
          * directly into a specified array.
-         * 
+         *
          * @returns {Array} An array of generated line objects.
          */
         CSSFormatter.prototype.generateLines = function () {
@@ -118,7 +118,7 @@
 
         /**
          * Format and output comment line object.
-         * 
+         *
          * @param   {CSSComment}      comment  The comment object to format.
          * @param   {number}          indent   The indent depth of the comment.
          * @param   {CSSFormatState}  state    The formatter state.
@@ -146,7 +146,7 @@
 
         /**
          * Format and output parent selector line object.
-         * 
+         *
          * @param {object}           parent          The parent CSS element.
          * @param {boolean}          isAfterComment  True if the selector is after a comment.
          * @param {number}           indent          The indent depth of the selector.
@@ -169,10 +169,10 @@
 
                 if (child instanceof CSSComment) {
                     this.generateComment(child, indent + options.indent, state);
-                } 
+                }
                 else if (child instanceof CSSParentSelector) {
                     this.generateParentSelectors(child, prev && prev instanceof CSSComment, indent + options.indent, state);
-                } 
+                }
                 else if (child instanceof CSSSelectors) {
                     this.generateSelectors(child, prev && prev instanceof CSSComment, indent + options.indent, state);
                     this.generateProperties(child, indent + options.indent, state);
@@ -186,7 +186,7 @@
 
         /**
          * Format and output selectors and opening brace.
-         * 
+         *
          * @param   {CSSSelectors}    selectors       The selectors object to format.
          * @param   {boolean}         isAfterComment  True if the comment proceeds a comment, otherwise false.
          * @param   {number}          indent          The number of indents to add before the selector.
@@ -196,9 +196,14 @@
             var options = this._options,
                 sopts = options.selectors;
 
+            // add selector comments
+            for (var j=0; j < selectors.comments.length; j++) {
+                this.generateComment(selectors.comments[j], indent, state);
+            }
+
             options.selectors.newLine && state.hasLines() && state.newLine(indent);
 
-            this.generateLinesBeforeSelector(state, indent, selectors, isAfterComment);
+            this.generateLinesBeforeSelector(state, indent, selectors, isAfterComment || selectors.comments.length);
 
             // get and add comma if the current context calls for one
             function comma(index, output) {
@@ -222,12 +227,12 @@
                         return i !== last;
 
                     if (sopts.combinatedPerLine && sel.hasCombinator()) {
-                        
+
                         if (state.current.text().length !== 0 && i !== 0) {
                             // put on own line if not on new line from previous selector
                             state.newLine(indent);
                         }
-                        
+
                         return i !== last;
                     }
 
@@ -250,7 +255,7 @@
 
         /**
          * Format and output properties and closing brace.
-         * 
+         *
          * @param {CSSSelectors}    selectors    The selectors whose properties are to be formatted.
          * @param {number}          indent       The indent depth of the comment.
          * @param {CSSFormatState}  state        The formatter state.
@@ -301,7 +306,7 @@
 
         /**
          * Generate opening brace.
-         * 
+         *
          * @param {CSSFormatState}   state   The formatter state.
          * @param {number}           indent  The current indent.
          */
@@ -317,7 +322,7 @@
 
         /**
          * Generate closing brace.
-         * 
+         *
          * @param {CSSFormatState}   state   The formatter state.
          * @param {number}           indent  The current indent.
          */
@@ -333,7 +338,7 @@
 
         /**
          * Generate empty lines before selector.
-         * 
+         *
          * @param   {CSSFormatState}  state           The formatter state.
          * @param   {number}          indent          The current indent.
          * @param   {CSSSelectors}    selectors       The selectors the lines are before.
@@ -364,7 +369,7 @@
 
         /**
          * Add empty lines
-         * 
+         *
          * @param   {number}          total   The number of lines.
          * @param   {number}          indent  The current indent.
          * @param   {CSSFormatState}  state   The generator state.
@@ -378,7 +383,7 @@
 
         /**
          * Get generated stylesheet as a string.
-         * 
+         *
          * @returns {string}
          */
         CSSFormatter.prototype.toString = function () {
@@ -404,7 +409,7 @@
 
         /**
          * Create a new line using the specified indent.
-         * 
+         *
          * @param {number} indent  The number of spaces to indent the new line with.
          */
         CSSFormatState.prototype.newLine = function (indent) {
@@ -415,4 +420,4 @@
 
         return CSSFormatter;
 
-}]);
+    }]);
