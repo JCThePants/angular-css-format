@@ -4,6 +4,7 @@ var output = '../CSSFormatter/src/web/js/libs/css-format.js';
 
 var basePath = 'src/';
 var files = [
+    'LICENSE.txt',
     'module.js',
     'CSSComment.js',
     'CSSFormatter.js',

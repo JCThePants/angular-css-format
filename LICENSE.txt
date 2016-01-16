@@ -1,0 +1,5 @@
+/*
+ angular-css-format
+ (c) 2015-2016 JCThePants http://github.com/JCThePants/angular-css-format
+ License: MIT
+*/
